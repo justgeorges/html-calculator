@@ -1,0 +1,70 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.calculator {
+  width: 400px;
+  background-color: black;
+}
+
+.result {
+  height: 25vh;
+  width: 100%;
+  background-color: black;
+  border: none;
+  color:white;
+  text-align: end;
+  font-size: 100pt;
+  pointer-events: none;
+}
+
+.buttons {
+  display: grid;
+  grid-template-areas:
+  "clear negation percentage operation"
+  "number number number operation"
+  "number number number operation"
+  "number number number operation"
+  "numZero numZero dot operation"
+}
+
+button {
+  width: 90px;
+  height: 90px;
+  margin: 5px;
+  border-radius: 50%;
+  border: none;
+  background-color: rgb(49, 49, 49);
+  font-size: x-large;
+  color: white;
+}
+
+.operation {
+  background-color: orange;
+}
+
+#clear {
+  background: gray;
+  color: black;
+}
+
+#negation {
+  background: gray;
+  color: black;
+}
+
+#percentage {
+  background: gray;
+  color: black;
+}
+
+.numZero {
+  grid-area: numZero;
+  width: 190px;
+  border-radius: 50px;
+  margin-bottom: 20px;
+}
