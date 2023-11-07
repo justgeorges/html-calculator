@@ -2,7 +2,7 @@ let buffer = "0";
 let runningTotal = 0;
 let previousOperator = "";
 let previousOperationTarget;
-let storedBuffer = 0;
+let storedBuffer = "0";
 const screen = document.querySelector(".result");
 let operation;
 
@@ -17,12 +17,14 @@ function buttonClick(eventTarget) {
 }
 
 //update screen and saving number in buffer
+// when a number is input, save it to the buffer
 function handleNumber(number) {
   if (buffer === "0") {
     buffer = number;
   } else {
     buffer += number;
   }
+  // display the buffer
   rerender(buffer);
 }
 
@@ -33,51 +35,70 @@ function handleNumber(number) {
 // 4) reset buffer
 
 function handleSymbol(value, target) {
-  // check if there's a previous symbol -- if so, remove the symbol and perform math
-  if (/[+\-x/]/.test(previousOperator)) {
-    previousOperationTarget.classList.remove("toggle");
-    target.classList.remove("toggle");
-    handleMath(target);
-  } else if (value === "%") {
-    buffer /= 100;
-    rerender(buffer);
-  } else if (value === "-/+") {
-    buffer *= -1;
-    rerender(buffer);
-  } else if (value === "C") {
-    buffer = "0";
-    rerender(buffer);
+  switch (value) {
+    case "%":
+      buffer /= 100;
+      break;
+    case "-/+":
+      buffer *= -1;
+      break;
+    case "C":
+      buffer = "0";
+      break;
+    case ".":
+      buffer = buffer + 0.0;
+      break;
+    case "+":
+    case "-":
+    case "x":
+    case "/":
+    case "=":
+      // check if there's already a operator selected, if so, deselect it
+      if (previousOperationTarget) {
+        previousOperationTarget.classList.remove("toggle");
+      }
+      // select the current operator
+      target.classList.add("toggle");
+      handleMath(value, target);
+      previousOperationTarget = target;
+      previousOperator = value;
+      break;
   }
-  // toggle the current symbol and save the operation in a variable
-  target.classList.add("toggle");
-  previousOperationTarget = target;
-  previousOperator = value;
-  // save the previous buffer as a number variable
-  storedBuffer = parseInt(buffer);
-  // reset buffer
-  buffer = "0";
+  rerender(buffer);
 }
 
-function handleMath() {
-  let answer = 0;
-  switch (previousOperator) {
-    case "+":
-      answer = storedBuffer + parseInt(buffer);
-      break;
-    case "-":
-      answer = storedBuffer - parseInt(buffer);
-      break;
-    case "x":
-      answer = storedBuffer * parseInt(buffer);
-      break;
-    case "/":
-      answer = storedBuffer / parseInt(buffer);
-      break;
-    case "=":
-      answer = eval(`${storedBuffer} ${previousOperator} ${buffer}`);
-      break;
+function handleMath(value) {
+  // scenarios:
+  // if you input a number and an operator while none previously exist, that number and operator are saved
+  if (storedBuffer === "0" && previousOperator === "") {
+    storedBuffer = parseInt(buffer);
+    buffer = "0";
+    previousOperator = value;
+  } else {
+    // if you input a number and an operator while a number is stored and an operator is toggled,
+    // that the stored number and the buffer number are combined using that toggled operator,
+    // and the result becomes the new stored number (the toggled button stays in var)
+    let intBuffer = parseInt(buffer);
+    switch (previousOperator) {
+      case "+":
+        intBuffer += storedBuffer;
+        break;
+      case "-":
+        intBuffer -= storedBuffer;
+        break;
+      case "x":
+        intBuffer *= storedBuffer;
+        break;
+      case "/":
+        intBuffer = storedBuffer / intBuffer;
+        break;
+      case "=":
+        handleMath(value);
+        break;
+    }
+    storedBuffer = intBuffer;
+    buffer = intBuffer;
   }
-  rerender(answer);
 }
 
 function rerender(buffer) {
