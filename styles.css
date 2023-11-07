@@ -43,8 +43,18 @@ button {
   color: white;
 }
 
+button:hover {
+  filter: brightness(110%);
+}
+
 .operation {
   background-color: orange;
+  animation-duration: 500ms;
+}
+
+.operation.toggle {
+  background-color: white;
+  color: orange;
 }
 
 #clear {
