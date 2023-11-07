@@ -1,24 +1,22 @@
 let buffer = "0";
 let runningTotal = 0;
-let previousOperator;
-
+let previousOperator = "";
+let previousOperationTarget;
+let storedBuffer = 0;
 const screen = document.querySelector(".result");
-function init() {
-  document
-    .querySelector(".buttons")
-    .addEventListener("click", function (event) {
-      buttonClick(event.target.innerText);
-    });
-}
+let operation;
 
-function buttonClick(value) {
+// sort inputs
+function buttonClick(eventTarget) {
+  let value = eventTarget.innerText;
   if (isNaN(parseInt(value))) {
-    handleSymbol(value);
+    handleSymbol(value, eventTarget);
   } else {
     handleNumber(value);
   }
 }
 
+//update screen and saving number in buffer
 function handleNumber(number) {
   if (buffer === "0") {
     buffer = number;
@@ -28,75 +26,64 @@ function handleNumber(number) {
   rerender(buffer);
 }
 
-function handleSymbol(symbol) {
-  switch (symbol) {
-    case "C":
-      buffer = "0";
+// handle symbol function
+// 1) toggle on a symbol
+// 2) save that toggled symbol
+// 3) save buffer into a stored number
+// 4) reset buffer
+
+function handleSymbol(value, target) {
+  // check if there's a previous symbol -- if so, remove the symbol and perform math
+  if (/[+\-x/]/.test(previousOperator)) {
+    previousOperationTarget.classList.remove("toggle");
+    target.classList.remove("toggle");
+    handleMath(target);
+  } else if (value === "%") {
+    buffer /= 100;
+    rerender(buffer);
+  } else if (value === "-/+") {
+    buffer *= -1;
+    rerender(buffer);
+  } else if (value === "C") {
+    buffer = "0";
+    rerender(buffer);
+  }
+  // toggle the current symbol and save the operation in a variable
+  target.classList.add("toggle");
+  previousOperationTarget = target;
+  previousOperator = value;
+  // save the previous buffer as a number variable
+  storedBuffer = parseInt(buffer);
+  // reset buffer
+  buffer = "0";
+}
+
+function handleMath() {
+  let answer = 0;
+  switch (previousOperator) {
+    case "+":
+      answer = storedBuffer + parseInt(buffer);
+      break;
+    case "-":
+      answer = storedBuffer - parseInt(buffer);
+      break;
+    case "x":
+      answer = storedBuffer * parseInt(buffer);
+      break;
+    case "/":
+      answer = storedBuffer / parseInt(buffer);
       break;
     case "=":
-      if (previousOperator === null) {
-        return;
-      }
-      flushOperation(parseInt(buffer));
-      previousOperator = null;
-      buffer = "" + runningTotal;
-      runningTotal = 0;
-      break;
-    case "+":
-    case "-":
-    case "x":
-    case "/":
-    case "-/+":
-    case "%":
-      handleMath(symbol);
-      break;
-    case ".":
-      console.log("dot");
+      answer = eval(`${storedBuffer} ${previousOperator} ${buffer}`);
       break;
   }
-  rerender(buffer);
-}
-
-function handleMath(value) {
-  if (buffer === "0") {
-    //do nothing
-    return;
-  }
-
-  const intBuffer = parseInt(buffer);
-  if (runningTotal === 0) {
-    runningTotal = intBuffer;
-  } else {
-    flushOperation(intBuffer);
-  }
-
-  previousOperator = value;
-  buffer = "0";
-  console.log(runningTotal);
-}
-
-function flushOperation(intBuffer) {
-  if (previousOperator === "+") {
-    runningTotal += intBuffer;
-  } else if (previousOperator === "-") {
-    runningTotal -= intBuffer;
-  } else if (previousOperator === "x") {
-    runningTotal *= intBuffer;
-  } else if (previousOperator === "/") {
-    runningTotal /= intBuffer;
-  }
+  rerender(answer);
 }
 
 function rerender(buffer) {
   screen.value = buffer;
 }
 
-init();
-
-//revision
-// 1) type a number
-// 2) hit an operator
-// 3) operator gets a highlight class toggle
-// 4) event listener triggers on toggle, saves operator in variable
-// 5) when previous operator has a value already calculate running total and display
-// 6) when equals sign is selected, completes operation
+document.querySelector(".buttons").addEventListener("click", function (event) {
+  buttonClick(event.target);
+});
