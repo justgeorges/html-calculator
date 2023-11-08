@@ -87,15 +87,16 @@ function handleSymbol(value, target) {
 
 function handleMath() {
   storedBuffer = parseInt(storedBuffer);
+  buffer = parseInt(buffer);
   switch (previousOperator) {
     case "+":
-      buffer += storedBuffer;
+      buffer = storedBuffer + buffer;
       break;
     case "-":
       buffer = storedBuffer - buffer;
       break;
     case "x":
-      buffer *= storedBuffer;
+      buffer = storedBuffer * buffer;
       break;
     case "/":
       buffer = storedBuffer / buffer;
