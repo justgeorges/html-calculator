@@ -57,17 +57,7 @@ button:hover {
   color: orange;
 }
 
-#clear {
-  background: gray;
-  color: black;
-}
-
-#negation {
-  background: gray;
-  color: black;
-}
-
-#percentage {
+.singleOP {
   background: gray;
   color: black;
 }

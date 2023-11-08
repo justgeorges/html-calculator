@@ -1,17 +1,25 @@
-let buffer = "0";
+let buffer = 0;
 let runningTotal = 0;
 let previousOperator = "";
 let previousOperationTarget;
-let storedBuffer = "0";
+let storedBuffer;
 const screen = document.querySelector(".result");
-let operation;
+let initialize = false;
+let cToggle = false;
+
+// render function -- displays number on screen
+function rerender(buffer) {
+  screen.value = buffer;
+}
 
 // sort inputs
 function buttonClick(eventTarget) {
   let value = eventTarget.innerText;
+  // if event's inner text is not a number, send to symbol fun
   if (isNaN(parseInt(value))) {
     handleSymbol(value, eventTarget);
   } else {
+    // otherwise, send to number fun
     handleNumber(value);
   }
 }
@@ -19,92 +27,101 @@ function buttonClick(eventTarget) {
 //update screen and saving number in buffer
 // when a number is input, save it to the buffer
 function handleNumber(number) {
-  if (buffer === "0") {
+  if (buffer === 0) {
     buffer = number;
+    console.log(buffer);
   } else {
     buffer += number;
+    buffer = parseInt(buffer);
+    console.log(buffer);
   }
-  // display the buffer
   rerender(buffer);
 }
 
-// handle symbol function
-// 1) toggle on a symbol
-// 2) save that toggled symbol
-// 3) save buffer into a stored number
-// 4) reset buffer
+function toggleKeys(target) {
+  if (previousOperationTarget) {
+    previousOperationTarget.classList.remove("toggle");
+  }
+  target.classList.add("toggle");
+}
 
 function handleSymbol(value, target) {
-  switch (value) {
-    case "%":
-      buffer /= 100;
-      break;
-    case "-/+":
-      buffer *= -1;
-      break;
-    case "C":
-      buffer = "0";
-      break;
-    case ".":
-      buffer = buffer + 0.0;
-      break;
+  // operating on numbers with a single operation
+  if (target.classList.contains("singleOp")) {
+    switch (value) {
+      case "%":
+        buffer /= 100;
+        break;
+      case "-/+":
+        buffer *= -1;
+        break;
+      case "C":
+        // if C is pressed once, clears the buffer. if pressed 2 times, clears everything
+        buffer = "0";
+        if (cToggle === true) {
+          storedBuffer = "0";
+          intBuffer = 0;
+          cToggle = false;
+        }
+        cToggle = true;
+        break;
+    }
+    rerender(buffer);
+    console.log("single operation occured");
+  } else if (!storedBuffer) {
+    toggleKeys(target);
+    previousOperator = value;
+    previousOperationTarget = target;
+    storedBuffer = buffer;
+    buffer = 0;
+  } else if (storedBuffer) {
+    toggleKeys(target);
+    handleMath();
+    previousOperator = value;
+    previousOperationTarget = target;
+    storedBuffer = buffer;
+    buffer = 0;
+  }
+}
+
+function handleMath() {
+  storedBuffer = parseInt(storedBuffer);
+  switch (previousOperator) {
     case "+":
+      buffer += storedBuffer;
+      break;
     case "-":
+      buffer = storedBuffer - buffer;
+      break;
     case "x":
+      buffer *= storedBuffer;
+      break;
     case "/":
-    case "=":
-      // check if there's already a operator selected, if so, deselect it
-      if (previousOperationTarget) {
-        previousOperationTarget.classList.remove("toggle");
-      }
-      // select the current operator
-      target.classList.add("toggle");
-      handleMath(value, target);
-      previousOperationTarget = target;
-      previousOperator = value;
+      buffer = storedBuffer / buffer;
       break;
   }
   rerender(buffer);
-}
-
-function handleMath(value) {
-  // scenarios:
-  // if you input a number and an operator while none previously exist, that number and operator are saved
-  if (storedBuffer === "0" && previousOperator === "") {
-    storedBuffer = parseInt(buffer);
-    buffer = "0";
-    previousOperator = value;
-  } else {
-    // if you input a number and an operator while a number is stored and an operator is toggled,
-    // that the stored number and the buffer number are combined using that toggled operator,
-    // and the result becomes the new stored number (the toggled button stays in var)
-    let intBuffer = parseInt(buffer);
-    switch (previousOperator) {
-      case "+":
-        intBuffer += storedBuffer;
-        break;
-      case "-":
-        intBuffer -= storedBuffer;
-        break;
-      case "x":
-        intBuffer *= storedBuffer;
-        break;
-      case "/":
-        intBuffer = storedBuffer / intBuffer;
-        break;
-      case "=":
-        handleMath(value);
-        break;
-    }
-    storedBuffer = intBuffer;
-    buffer = intBuffer;
-  }
-}
-
-function rerender(buffer) {
-  screen.value = buffer;
 }
 
 document.querySelector(".buttons").addEventListener("click", function (event) {
   buttonClick(event.target);
 });
+
+// define loop
+
+// input a string of numbers
+
+// || string of numbers is saved in a buffer and displayed
+
+// press an operation key
+
+// || buffer is saved in a cachedBuffer
+// || buffer returns to zero but is not displayed yet
+// || operation is saved in variable
+
+// input a string of numbers
+// || string of numbers is saved in a buffer and displayed
+
+// press an operation key
+// || chachedBuffer is operated against buffer
+// || answer is saved as buffer and displayed
