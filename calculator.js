@@ -1,15 +1,16 @@
 let buffer = 0;
-let runningTotal = 0;
 let previousOperator = "";
 let previousOperationTarget;
 let storedBuffer;
-const screen = document.querySelector(".result");
 let initialize = false;
 let cToggle = false;
+const screen = document.querySelector(".result");
+const copier = document.querySelector(".copier");
 
 // render function -- displays number on screen
 function rerender(buffer) {
   screen.value = buffer;
+  screen.style.color = "white";
 }
 
 // sort inputs
@@ -102,6 +103,13 @@ function handleMath() {
   }
   rerender(buffer);
 }
+
+function copyAnswer() {
+  navigator.clipboard.writeText(screen.value);
+  screen.style.color = "green";
+}
+
+copier.addEventListener("click", copyAnswer);
 
 document.querySelector(".buttons").addEventListener("click", function (event) {
   buttonClick(event.target);
